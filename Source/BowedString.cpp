@@ -254,6 +254,6 @@ void BowedString::exciteBow()
         ++i;
     }
 
-    //double excitation = connectionDivisionTerm * FB * sqrt(2.0 * a) * vRel * exp(-a * vRel * vRel) * exp(0.5);
-    //Globals::extrapolation(u[0], bL, -excitation);
+    double excitation = connectionDivisionTerm * FB * sqrt(2.0 * a) * vRel * exp(-a * vRel * vRel) * exp(0.5);
+    Globals::extrapolation(u[0], bL, -excitation);
 }
