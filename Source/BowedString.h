@@ -15,23 +15,25 @@
 class BowedString : public juce::Component
 {
 public:
-    BowedString(juce::NamedValueSet parameters);
+    BowedString(juce::NamedValueSet parameters, double K);
     ~BowedString();
 
     long calcCounter = 0;
-    void calculate();
+    void calculateBow();
+    void calculatePluck();
     void updateStates();
     void excitePluck();
     void exciteBow();
 
-    void mouseDown(const juce::MouseEvent& e) override;
-    void mouseUp(const juce::MouseEvent& e) override;
+    //void mouseDown(const juce::MouseEvent& e) override;
+    //void mouseUp(const juce::MouseEvent& e) override;
 
     bool shouldExcite() { return excitationFlag; };
 
     double getOutput(double Lratio)
     {
-        return u[1][static_cast<int> (round(N * Lratio))];
+        int index = round(N * Lratio);
+        return u[1][index]*10;
     }
 
     void paint(juce::Graphics&) override;
@@ -40,13 +42,15 @@ public:
     void setConnectionDivisionTerm(double cDT) { connectionDivisionTerm = cDT; };
     double getConnectionDivisionTerm() { return connectionDivisionTerm; };
 
+    double Jl0(int l);
+
 private:
     //BOW VARIABLES
         //model params
-        double L, r, rho, A, T, E, I, c, kappa, sigma0, sigma1, lambda, lambdaSq, h, k, fs, muSq, cSq, kappaSq;
+        double L, rho, A, T, E, I, c, kappa, sigma0, sigma1, lambda, lambdaSq, h, k, muSq, cSq, kappaSq;
         int N;
         //scheme vars
-        double Adiv, B0, B1, B2, C0, C1, S0, S1, Bss, phi, Jl0;
+        double Adiv, B0, B1, B2, C0, C1, S0, S1, Bss, phi;
 
         // An (N+1) x 3 'matrix' containing the state of the system at all time-steps
         std::vector<std::vector<double>> uStates;
@@ -55,7 +59,7 @@ private:
         std::vector<double*> u;
 
         // flag to tell MainComponent whether to excite the scheme or not
-        bool excitationFlag = false;
+        bool excitationFlag = true;
 
         // initialise location of excitation
         double excitationLoc = 0.5;
@@ -69,8 +73,8 @@ private:
         double xB, vB, fB, a, FB;
 
         // NR variables
-        double vRel, vPrev, tol, bL, eps, xNext, b, g, gD, uI, uIPrev, uI1, uI2, uIM1, uIM2, uIPrev1, uIPrevM1;
-        int maxIterations, i;
+        double vRel, vPrev, tol, bL, eps, xNext, b, uI, uIPrev, uI1, uI2, uIM1, uIM2, uIPrev1, uIPrevM1;
+        int i;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(BowedString)
 };

@@ -13,13 +13,11 @@
 #include <iostream>
 #include <cmath>
 
-BowedString::BowedString(juce::NamedValueSet parameters)
+BowedString::BowedString(juce::NamedValueSet parameters, double K)
 {
+    k = K;
     vRel = 0;
     vPrev = 0;
-
-    fs = *parameters.getVarPointer("fs");
-    k = *parameters.getVarPointer("k");
 
     // bow parameters
     xB = *parameters.getVarPointer("xB");
@@ -105,24 +103,30 @@ BowedString::~BowedString()
 {
 
 }
-
-void BowedString::calculate()
+void BowedString::calculatePluck()
 {
     for (int l = 2; l < N - 1; ++l) // clamped boundaries
         u[0][l] = B0 * u[1][l] + B1 * (u[1][l + 1] + u[1][l - 1]) + B2 * (u[1][l + 2] + u[1][l - 2])
         + C0 * u[2][l] + C1 * (u[2][l + 1] + u[2][l - 1]);
-    /*
-    for (int l = 2; 1 < N - 1; ++l)
+}
+
+void BowedString::calculateBow()
+{
+    //for (int l = 2; l < N - 1; ++l) // clamped boundaries
+      //  u[0][l] = B0 * u[1][l] + B1 * (u[1][l + 1] + u[1][l - 1]) + B2 * (u[1][l + 2] + u[1][l - 2])
+        //+ C0 * u[2][l] + C1 * (u[2][l + 1] + u[2][l - 1]);
+    
+    for (int l = 2; l < N - 1; ++l)
     {
         u[0][l] = (2 * u[1][l] - u[2][l] + lambdaSq * (u[1][l + 1] - 2 * u[1][l] + u[1][l-1])
             - (pow(k,2)*pow(kappa,2)/pow(h,4))*(u[1][l+2] - 4*u[1][l+1] + 6*u[1][l] - 4*u[1][l-1] + u[1][l-2]) + sigma0*k*u[2][l]
             + (2 * sigma1 * k / pow(h, 2)) * (u[1][l + 1] - 2 * u[1][l] + u[1][l - 1] - u[2][l + 1] + 2 * u[2][l] - u[2][l - 1])
-            - (pow(k, 2) * (1 / h) * FB * (sqrt(2 * a) * vRel * exp(-a * pow(vRel, 2) + 0.5)))
+            - (pow(k, 2) * Jl0(l) * FB * (sqrt(2 * a) * vRel * exp(-a * pow(vRel, 2) + 0.5)))
             ) / (1 + sigma0 * k);
         //u[0][l] = B0 * u[1][l] + B1 * (u[1][l + 1] + u[1][l - 1]) + B2 * (u[1][l + 2] + u[1][l - 2])
         //    + C0 * u[2][l] + C1 * (u[2][l + 1] + u[2][l - 1]) + phi;
     }
-    */
+    
     
     ++calcCounter;
 }
@@ -158,7 +162,7 @@ void BowedString::excitePluck()
     // Disable the excitation flag to only excite once
     excitationFlag = false;
 }
-
+/*
 void BowedString::mouseDown(const juce::MouseEvent& e)
 {
     // Get the excitation location as a ratio between the x-location of the mouse-click and the width of the app
@@ -167,12 +171,8 @@ void BowedString::mouseDown(const juce::MouseEvent& e)
     // Activate the excitation flag to be used by the MainComponent to excite the string
     excitationFlag = true;
 }
+*/
 
-void BowedString::mouseUp(const juce::MouseEvent& e)
-{
-    // Called when mouse is released
-    excitationFlag = false;
-}
 
 void BowedString::paint(juce::Graphics& g)
 {
@@ -220,7 +220,7 @@ juce::Path BowedString::visualiseState(juce::Graphics& g, double visualScaling)
 
 void BowedString::exciteBow()
 {
-    bL = round(xB / h);
+    bL = floor(xB / h);
 
     uI = Globals::interpolation(u[1], bL);
     uIPrev = Globals::interpolation(u[2], bL);
@@ -242,12 +242,12 @@ void BowedString::exciteBow()
     // loop until a maximum number of iterations
     i = 0;
     eps = 1;
-
+    tol = 1e-4;
     vPrev = 0;
     while (eps > tol && i < 100)
     {
         vRel = vPrev - ((2 / k + 2 * sigma0) * vPrev + FB * (1 / h) * sqrt(2 * a) * vPrev * exp(-a * pow(vPrev, 2) + 0.5) + b)
-            / (2 / k + 2 * sigma0 + (1 / h) * FB * sqrt(2 * a) * (1 - 2 * a * pow(vPrev, 2)) * exp(-a * pow(vPrev, 2) + 0.5));
+            / (2 / k + 2 * sigma0 + Jl0(bL) * FB * sqrt(2 * a) * (1 - 2 * a * pow(vPrev, 2)) * exp(-a * pow(vPrev, 2) + 0.5));
 
         eps = abs(vRel - vPrev);
         vPrev = vRel;
@@ -255,5 +255,18 @@ void BowedString::exciteBow()
     }
 
     double excitation = connectionDivisionTerm * FB * sqrt(2.0 * a) * vRel * exp(-a * vRel * vRel) * exp(0.5);
-    Globals::extrapolation(u[0], bL, -excitation);
+    Globals::extrapolation(u[0], bL, -excitation);    
+}
+
+double BowedString::Jl0(int l)
+{
+
+    if (floor(xB / h) == l)
+    {
+        return 1 / h;
+    }
+    else
+    {
+        return 0;
+    }
 }
