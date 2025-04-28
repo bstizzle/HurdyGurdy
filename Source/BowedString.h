@@ -44,6 +44,8 @@ public:
 
     double Jl0(int l);
 
+    void refreshParameters(juce::NamedValueSet parameters);
+
 private:
     //BOW VARIABLES
         //model params

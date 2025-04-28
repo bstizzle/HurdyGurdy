@@ -34,9 +34,6 @@ MainComponent::~MainComponent()
 //==============================================================================
 void MainComponent::prepareToPlay (int samplesPerBlockExpected, double sampleRate)
 {
-    //// Set the paramters ///
-    juce::NamedValueSet parameters;
-
     // parameters you'll use to initialise more than one other parameter should be defined here
     double r = 0.0005;
 
@@ -64,6 +61,15 @@ void MainComponent::prepareToPlay (int samplesPerBlockExpected, double sampleRat
     //addAndMakeVisible(myStiffString.get()); // add the string to the application
     //addAndMakeVisible(myWheel.get()); // add the string to the application
     addAndMakeVisible(bowedString.get());
+
+    addAndMakeVisible(tensionSlider);
+    tensionSlider.setRange(50.0, 1200.0); // [1]
+    tensionSlider.addListener(this); // [3]
+
+    addAndMakeVisible(tensionLabel);
+    tensionLabel.setText("Tension", juce::dontSendNotification);
+    tensionLabel.attachToComponent(&tensionSlider, true); // [4]
+
 
     // Call resized again as our components need a sample rate before they can get initialised.
     resized();
@@ -141,6 +147,10 @@ void MainComponent::resized()
     // update their positions.
     //if (myStiffString != nullptr)
       //  myStiffString->setBounds(getLocalBounds());
+    auto sliderLeft = 120;
+    tensionSlider.setBounds(sliderLeft, 20, getWidth() - sliderLeft - 10, 20);
+    durationSlider.setBounds(sliderLeft, 50, getWidth() - sliderLeft - 10, 20);
+
     if (bowedString != nullptr)
         bowedString->setBounds(getLocalBounds());
 }

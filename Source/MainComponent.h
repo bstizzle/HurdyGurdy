@@ -8,7 +8,7 @@
     This component lives inside our window, and this is where you should put all
     your controls and content.
 */
-class MainComponent  : public juce::AudioAppComponent, public juce::Timer
+class MainComponent  : public juce::AudioAppComponent, public juce::Timer, public juce::Slider::Listener
 {
 public:
     //==============================================================================
@@ -28,12 +28,30 @@ public:
 
     void timerCallback() override;
 
+    void sliderValueChanged(juce::Slider* slider) override
+    {
+        if (slider == &tensionSlider)
+        {
+            parameters.set("T", tensionSlider.getValue());
+            bowedString->refreshParameters(parameters);
+        }
+    }
+
+
 private:
     //==============================================================================
     // Your private member variables go here...
     //std::unique_ptr<StiffString> myStiffString;
     //std::unique_ptr<Wheel> myWheel;
     std::unique_ptr<BowedString> bowedString;
+
+    //// Set the paramters ///
+    juce::NamedValueSet parameters;
+
+    juce::Slider tensionSlider;
+    juce::Label tensionLabel;
+    juce::Slider durationSlider;
+    juce::Label durationLabel;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };

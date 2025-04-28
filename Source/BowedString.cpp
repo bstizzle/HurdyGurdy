@@ -285,3 +285,84 @@ double BowedString::Jl0(int l)
         return 0;
     }
 }
+
+void BowedString::refreshParameters(juce::NamedValueSet parameters)
+{
+    xB = *parameters.getVarPointer("xB");
+    fB = *parameters.getVarPointer("fB");
+    vB = *parameters.getVarPointer("vB");
+    a = *parameters.getVarPointer("a");
+    BM = sqrt(2.0 * a) * exp(0.5);
+
+    // string parameters
+    L = *parameters.getVarPointer("L");
+    rho = *parameters.getVarPointer("rho");
+    A = *parameters.getVarPointer("A");
+    T = *parameters.getVarPointer("T");
+    E = *parameters.getVarPointer("E");
+    I = *parameters.getVarPointer("I");
+    sigma0 = *parameters.getVarPointer("sigma0");
+    sigma1 = *parameters.getVarPointer("sigma1");
+
+    c = sqrt(T / (rho * A));
+    kappa = sqrt((E * I) / (rho * A));
+
+    double stabilityTerm = c * c * k * k + 4.0 * sigma1 * k;
+
+    //h = sqrt(((pow(c,2) * pow(k,2)) + 4 * sigma1 * k + sqrt(pow((pow(c,2) * pow(k,2) + 4 * sigma1 * k),2) + (16 * pow(kappa,2) * pow(k,2))) / 2));
+    h = sqrt(0.5 * (stabilityTerm + sqrt((stabilityTerm * stabilityTerm) + 16.0 * kappa * kappa * k * k)));
+    N = floor(L / h);
+    h = L / N;
+
+    // Initialise vectors
+    uStates = std::vector<std::vector<double>>(3,
+        std::vector<double>(N + 1, 0));
+
+    /*  Make u pointers point to the first index of the state vectors.
+        To use u (and obtain a vector from the state vectors) use indices like u[n][l] where,
+             - n = 0 is u^{n+1},
+             - n = 1 is u^n, and
+             - n = 2 is u^{n-1}.
+        Also see calculateScheme()
+     */
+
+     // Initialise pointer vector
+    u.resize(3, nullptr);
+
+    // Make set memory addresses to first index of the state vectors.
+    for (int i = 0; i < 3; ++i)
+        u[i] = &uStates[i][0];
+
+    lambda = c * k / h;
+    lambdaSq = lambda * lambda;
+    muSq = ((kappa * kappa) * (k * k)) / (h * h * h * h);
+    cSq = c * c;
+    kappaSq = kappa * kappa;
+
+    S0 = sigma0 * k;
+    S1 = (2.0 * sigma1 * k) / (h * h);
+
+    FB = (fB / (rho * A));
+    //FB = (0.1 / (rho * A * h)); // ask Silvin about this
+
+    // Scheme coefficients
+    B0 = 2.0 - 2.0 * lambdaSq - 6.0 * muSq - 2.0 * S1; // u_l^n
+    B1 = lambdaSq + 4.0 * muSq + S1;                   // u_{l+-1}^n
+    B2 = -muSq;                                        // u_{l+-2}^n
+    C0 = -1.0 + S0 + 2.0 * S1;                         // u_l^{n-1}
+    C1 = -S1;                                          // u_{l+-1}^{n-1}
+
+    Bss = 2.0 - 2.0 * lambdaSq - 5.0 * muSq - 2.0 * S1;
+
+    Adiv = 1.0 / (1.0 + S0);                           // u_l^{n+1}
+
+    // Divide by u_l^{n+1} term
+    B0 *= Adiv;
+    B1 *= Adiv;
+    B2 *= Adiv;
+    C0 *= Adiv;
+    C1 *= Adiv;
+    Bss *= Adiv;
+
+    setConnectionDivisionTerm(k * k / (rho * A * h * (1.0 + sigma0 * k)));
+}
