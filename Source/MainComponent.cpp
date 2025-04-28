@@ -41,20 +41,20 @@ void MainComponent::prepareToPlay (int samplesPerBlockExpected, double sampleRat
     double r = 0.0005;
 
     // string parameters
-    parameters.set("L", 1);
-    parameters.set("rho", 7850);
-    parameters.set("A", r * r * 3.1415);
-    parameters.set("T", 1000);
+    parameters.set("L", 1.0);
+    parameters.set("rho", 7850.0);
+    parameters.set("A", r * r * juce::double_Pi);
+    parameters.set("T", 1000.0);
     parameters.set("E", 2e11);
-    parameters.set("I", r * r * r * r * 3.1415 * 0.25);
-    parameters.set("sigma0", 1);
+    parameters.set("I", r * r * r * r * juce::double_Pi * 0.25);
+    parameters.set("sigma0", 1.0);
     parameters.set("sigma1", 0.005);
     // bow parameters
 
     parameters.set("xB", 0.125);
-    parameters.set("fB", 1);
+    parameters.set("fB", 1.0);
     parameters.set("vB", 0.2);
-    parameters.set("a", 100);
+    parameters.set("a", 100.0);
 
     //// Initialise an instance of the SimpleString class ////
     //myWheel = std::make_unique<Wheel>(parameters);
@@ -95,20 +95,25 @@ void MainComponent::getNextAudioBlock (const juce::AudioSourceChannelInfo& buffe
     //if (myStiffString->shouldExcite())
         //myStiffString->excitePluck();
         //myStiffString->exciteBow();
-    if (bowedString->shouldExcite())
-        bowedString->exciteBow();
+    //if (bowedString->shouldExcite())
+        //bowedString->exciteBow();
         //bowedString->excitePluck();
 
     for (int i = 0; i < bufferToFill.numSamples; ++i)
     {
         //myStiffString->calculate();
         //myStiffString->updateStates();
+        if (bowedString->shouldExcite())
+        {
+            bowedString->exciteBow();
+        }
+
         bowedString->calculateBow();
         //bowedString->calculatePluck();
         bowedString->updateStates();
 
         //output = myStiffString->getOutput(0.8); // get output at 0.8L of the string
-        output = bowedString->getOutput(0.3); // get output at 0.8L of the string
+        output = bowedString->getOutput(0.8); // get output at 0.8L of the string
 
         for (int channel = 0; channel < numChannels; ++channel)
             curChannel[channel][0][i] = Globals::limit(output);

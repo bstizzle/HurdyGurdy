@@ -25,15 +25,15 @@ public:
     void excitePluck();
     void exciteBow();
 
-    //void mouseDown(const juce::MouseEvent& e) override;
-    //void mouseUp(const juce::MouseEvent& e) override;
+    void mouseDown(const juce::MouseEvent& e) override;
+    void mouseUp(const juce::MouseEvent& e) override;
 
     bool shouldExcite() { return excitationFlag; };
 
     double getOutput(double Lratio)
     {
         int index = round(N * Lratio);
-        return u[1][index]*10;
+        return u[1][index]*100;
     }
 
     void paint(juce::Graphics&) override;
@@ -59,7 +59,7 @@ private:
         std::vector<double*> u;
 
         // flag to tell MainComponent whether to excite the scheme or not
-        bool excitationFlag = true;
+        bool excitationFlag = false;
 
         // initialise location of excitation
         double excitationLoc = 0.5;
@@ -70,7 +70,7 @@ private:
 
     //BOW VARIABLES
         // bow variables
-        double xB, vB, fB, a, FB;
+        double xB, vB, fB, a, FB, BM;
 
         // NR variables
         double vRel, vPrev, tol, bL, eps, xNext, b, uI, uIPrev, uI1, uI2, uIM1, uIM2, uIPrev1, uIPrevM1;
