@@ -13,9 +13,10 @@
 #include <iostream>
 #include <cmath>
 
-BowedString::BowedString(juce::NamedValueSet parameters, double K)
+BowedString::BowedString(juce::NamedValueSet parameters, double K, double freq)
 {
     k = K;
+    f0 = freq;
     vRel = 0;
     vPrev = 0;
 
@@ -27,7 +28,7 @@ BowedString::BowedString(juce::NamedValueSet parameters, double K)
     BM = sqrt(2.0 * a) * exp(0.5);
 
     // string parameters
-    L = *parameters.getVarPointer("L");
+    //L = *parameters.getVarPointer("L");
     rho = *parameters.getVarPointer("rho");
     A = *parameters.getVarPointer("A");
     T = *parameters.getVarPointer("T");
@@ -38,6 +39,8 @@ BowedString::BowedString(juce::NamedValueSet parameters, double K)
 
     c = sqrt(T / (rho * A));
     kappa = sqrt((E * I) / (rho * A));
+
+    L = c / (f0 * 2);
 
     double stabilityTerm = c * c * k * k + 4.0 * sigma1 * k;
 
@@ -104,6 +107,7 @@ BowedString::~BowedString()
 {
 
 }
+
 void BowedString::calculatePluck()
 {
     for (int l = 2; l < N - 1; ++l) // clamped boundaries
@@ -115,20 +119,17 @@ void BowedString::calculateBow()
 {
     for (int l = 2; l < N - 1; ++l)
     {
-        /*
-        u[0][l] = (2 * u[1][l] - u[2][l] + lambdaSq * (u[1][l + 1] - 2 * u[1][l] + u[1][l-1])
-            - ((k*k*kappaSq)/(h*h*h*h))*(u[1][l+2] - 4*u[1][l+1] + 6*u[1][l] - 4*u[1][l-1] + u[1][l-2]) + sigma0*k*u[2][l]
-            + ((2 * sigma1 * k)/(h * h)) * (u[1][l + 1] - 2 * u[1][l] + u[1][l - 1] - u[2][l + 1] + 2 * u[2][l] - u[2][l - 1])
-            - (pow(k, 2) * Jl0(l) * FB * (sqrt(2 * a) * vRel * exp(-a * pow(vRel, 2) + 0.5)))
-            ) / (1 + sigma0 * k);
-         */
-        u[0][l] = (2.0 * u[1][l] - u[2][l] + lambdaSq * (u[1][l + 1] - 2.0 * u[1][l] + u[1][l - 1])
-            - ((k * k * kappaSq) / (h * h * h * h)) * (u[1][l + 2] - 4.0 * u[1][l + 1] + 6.0 * u[1][l] - 4.0 * u[1][l - 1] + u[1][l - 2]) + sigma0 * k * u[2][l]
-            + ((2.0 * sigma1 * k) / (h * h)) * (u[1][l + 1] - 2.0 * u[1][l] + u[1][l - 1] - u[2][l + 1] + 2.0 * u[2][l] - u[2][l - 1])
-            - (k * k * FB * BM * vRel * exp(-a * vRel * vRel) * Jl0(l))
-            ) / (1.0 + sigma0 * k);
-        //u[0][l] = B0 * u[1][l] + B1 * (u[1][l + 1] + u[1][l - 1]) + B2 * (u[1][l + 2] + u[1][l - 2])
-        //    + C0 * u[2][l] + C1 * (u[2][l + 1] + u[2][l - 1]) + phi;
+        // full expanded equation
+        //u[0][l] = (2.0 * u[1][l] - u[2][l] + lambdaSq * (u[1][l + 1] - 2.0 * u[1][l] + u[1][l - 1])
+        //    - ((k * k * kappaSq) / (h * h * h * h)) * (u[1][l + 2] - 4.0 * u[1][l + 1] + 6.0 * u[1][l] - 4.0 * u[1][l - 1] + u[1][l - 2]) + sigma0 * k * u[2][l]
+        //    + ((2.0 * sigma1 * k) / (h * h)) * (u[1][l + 1] - 2.0 * u[1][l] + u[1][l - 1] - u[2][l + 1] + 2.0 * u[2][l] - u[2][l - 1])
+        //    - (k * k * FB * BM * vRel * exp(-a * vRel * vRel) * Jl0(l))
+        //    ) / (1.0 + sigma0 * k);
+
+        // more efficient equation using pre-calc'd coefficients
+        u[0][l] = B0 * u[1][l] + B1 * (u[1][l + 1] + u[1][l - 1]) + B2 * (u[1][l + 2] + u[1][l - 2])
+            + C0 * u[2][l] + C1 * (u[2][l + 1] + u[2][l - 1]) 
+            - (k * k * FB * BM * vRel * exp(-a * vRel * vRel) * Jl0(l))*Adiv;
     }
     
     ++calcCounter;
@@ -275,7 +276,6 @@ void BowedString::exciteBow()
 
 double BowedString::Jl0(int l)
 {
-
     if (floor(xB / h) == l)
     {
         return 1 / h;
@@ -286,7 +286,8 @@ double BowedString::Jl0(int l)
     }
 }
 
-void BowedString::refreshParameters(juce::NamedValueSet parameters)
+
+void BowedString::refreshParameters(juce::NamedValueSet parameters, double freq)
 {
     xB = *parameters.getVarPointer("xB");
     fB = *parameters.getVarPointer("fB");
@@ -295,7 +296,8 @@ void BowedString::refreshParameters(juce::NamedValueSet parameters)
     BM = sqrt(2.0 * a) * exp(0.5);
 
     // string parameters
-    L = *parameters.getVarPointer("L");
+    f0 = freq;
+    //L = *parameters.getVarPointer("L");
     rho = *parameters.getVarPointer("rho");
     A = *parameters.getVarPointer("A");
     T = *parameters.getVarPointer("T");
@@ -306,6 +308,8 @@ void BowedString::refreshParameters(juce::NamedValueSet parameters)
 
     c = sqrt(T / (rho * A));
     kappa = sqrt((E * I) / (rho * A));
+
+    L = c / (f0 * 2);
 
     double stabilityTerm = c * c * k * k + 4.0 * sigma1 * k;
 

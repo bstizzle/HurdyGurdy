@@ -15,7 +15,7 @@
 class BowedString : public juce::Component
 {
 public:
-    BowedString(juce::NamedValueSet parameters, double K);
+    BowedString(juce::NamedValueSet parameters, double K, double freq);
     ~BowedString();
 
     long calcCounter = 0;
@@ -44,12 +44,13 @@ public:
 
     double Jl0(int l);
 
-    void refreshParameters(juce::NamedValueSet parameters);
+    void refreshParameters(juce::NamedValueSet parameters, double freq);
 
 private:
     //BOW VARIABLES
         //model params
         double L, rho, A, T, E, I, c, kappa, sigma0, sigma1, lambda, lambdaSq, h, k, muSq, cSq, kappaSq;
+        double f0;
         int N;
         //scheme vars
         double Adiv, B0, B1, B2, C0, C1, S0, S1, Bss, phi;
