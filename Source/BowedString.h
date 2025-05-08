@@ -25,6 +25,8 @@ public:
     void excitePluck();
     void exciteBow();
 
+    void tune(double freq);
+
     void mouseDown(const juce::MouseEvent& e) override;
     void mouseUp(const juce::MouseEvent& e) override;
 

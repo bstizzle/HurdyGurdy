@@ -50,27 +50,25 @@ void MainComponent::prepareToPlay (int samplesPerBlockExpected, double sampleRat
     parameters.set("sigma1", 0.005); // steel to nylon relationship
     // bow parameters
 
-    parameters.set("xB", 0.13); // closer to edge for more irregular
+    parameters.set("xB", 0.23); // closer to edge for more irregular
     parameters.set("fB", 1.0);
     parameters.set("vB", 0.2);
     parameters.set("a", 100.0);
 
-    //// Initialise an instance of the SimpleString class ////
-    //myWheel = std::make_unique<Wheel>(parameters);
-    //myStiffString = std::make_unique<StiffString>(parameters);
-    //bowedString = std::make_unique<BowedString>(parameters, 1/sampleRate);
+    //// Initialise an string instances ////
 
-    droneString1 = std::make_unique<BowedString>(parameters, 1 / sampleRate, 116.54); //Bb - root
-    droneString2 = std::make_unique<BowedString>(parameters, 1 / sampleRate, 174.61); //F - perfect 5th
-    melodyString = std::make_unique<BowedString>(parameters, 1 / sampleRate, 466.16); //Bb4 - initialize melody string one octave up
-    melodyString->refreshParameters(parameters, 233.08); // before play, tune down the melody string to the roob Bb3
+    droneString1 = std::make_unique<BowedString>(parameters, 1 / sampleRate, rootFreq); // root drone note
+    droneString2 = std::make_unique<BowedString>(parameters, 1 / sampleRate, rootFreq / pow(1.05946, 7)); // harmony drone note - 4th below root
+    melodyString1 = std::make_unique<BowedString>(parameters, 1 / sampleRate, rootFreq * pow(1.05946, 24)); // upper limit of low melody note - 2 octaves above root
+    melodyString1->refreshParameters(parameters, rootFreq * pow(1.05946, 12)); // actual starting low melody note - 1 octave above root
+    melodyString2 = std::make_unique<BowedString>(parameters, 1 / sampleRate, rootFreq * pow(1.05946, 36)); // upper limit of high note - 3 octaves above root
+    melodyString2->refreshParameters(parameters, rootFreq * pow(1.05946, 24)); // actual starting high melody note - 2 octaves above root
 
-    //addAndMakeVisible(myStiffString.get()); // add the string to the application
-    //addAndMakeVisible(myWheel.get()); // add the string to the application
-    //addAndMakeVisible(bowedString.get());
+
     addAndMakeVisible(droneString1.get());
     addAndMakeVisible(droneString2.get());
-    addAndMakeVisible(melodyString.get());
+    addAndMakeVisible(melodyString1.get());
+    addAndMakeVisible(melodyString2.get());
 
 
     addAndMakeVisible(melodySlider);
@@ -108,53 +106,41 @@ void MainComponent::getNextAudioBlock (const juce::AudioSourceChannelInfo& buffe
 
     std::vector<float* const*> curChannel{ &channelData1, &channelData2 };
 
-    // only do control stuff out of the buffer (at least work with flags so that control doesn't interfere with the scheme calculation)
-    //if (myStiffString->shouldExcite())
-        //myStiffString->excitePluck();
-        //myStiffString->exciteBow();
-    //if (bowedString->shouldExcite())
-        //bowedString->exciteBow();
-        //bowedString->excitePluck();
-
     for (int i = 0; i < bufferToFill.numSamples; ++i)
     {
-        //myStiffString->calculate();
-        //myStiffString->updateStates();
-        //if (bowedString->shouldExcite())
-        //{
-        //    bowedString->exciteBow();
-        //}
         if (droneString1->shouldExcite())
         {
             droneString1->exciteBow();
             droneString2->exciteBow();
-            melodyString->exciteBow();
+            melodyString1->exciteBow();
+            melodyString2->exciteBow();
         }
         if (droneString2->shouldExcite())
         {
             droneString2->exciteBow();
         }
-        if (melodyString->shouldExcite())
+        if (melodyString1->shouldExcite())
         {
-            melodyString->exciteBow();
+            melodyString1->exciteBow();
+        }
+        if (melodyString2->shouldExcite())
+        {
+            melodyString2->exciteBow();
         }
 
-        //bowedString->calculateBow();
-        //bowedString->updateStates();
         droneString1->calculateBow();
         droneString1->updateStates();
         droneString2->calculateBow();
         droneString2->updateStates();
-        melodyString->calculateBow();
-        melodyString->updateStates();
+        melodyString1->calculateBow();
+        melodyString1->updateStates();
+        melodyString2->calculateBow();
+        melodyString2->updateStates();
 
-        //output = myStiffString->getOutput(0.8); // get output at 0.8L of the string
-        //output = bowedString->getOutput(0.08); // get output at 0.8L of the string
         // move  outpout location closer to edge for more irregularities
-
-        double outputLoc = 0.08;
+        double outputLoc = 0.11;
         output = (droneString1->getOutput(outputLoc) + droneString2->getOutput(outputLoc)
-            + melodyString->getOutput(outputLoc));
+            + melodyString1->getOutput(outputLoc) + melodyString2->getOutput(outputLoc));
 
         for (int channel = 0; channel < numChannels; ++channel)
             curChannel[channel][0][i] = Globals::limit(output);
@@ -186,15 +172,17 @@ void MainComponent::resized()
     melodySlider.setBounds(sliderLeft, 20, getWidth() - sliderLeft - 10, 20);
 
     auto bounds = getLocalBounds();
-    int numStrings = 3;
+    int numStrings = 4;
     int stringHeight = bounds.getHeight() / numStrings;
 
     if (droneString1 != nullptr)
         droneString1->setBounds(bounds.removeFromTop(stringHeight));
     if (droneString2 != nullptr)
         droneString2->setBounds(bounds.removeFromTop(stringHeight));
-    if (melodyString != nullptr)
-        melodyString->setBounds(bounds.removeFromTop(stringHeight));
+    if (melodyString1 != nullptr)
+        melodyString1->setBounds(bounds.removeFromTop(stringHeight));
+    if (melodyString2 != nullptr)
+        melodyString2->setBounds(bounds.removeFromTop(stringHeight));
 }
 /*
 double MainComponent::limit(double val)

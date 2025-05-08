@@ -32,65 +32,88 @@ public:
     {
         if (slider == &melodySlider)
         {
-            //melodyString->tune(melodySlider.getValue());
-            melodyString->refreshParameters(parameters, melodySlider.getValue());
+            //melodyString1->tune(melodySlider.getValue());
+            melodyString1->refreshParameters(parameters, melodySlider.getValue());
         }
     }
 
     bool keyPressed(const juce::KeyPress& key, juce::Component* originatingComponent) override {
-        if (key == juce::KeyPress('c'))
+        if (key == juce::KeyPress('a'))
         {
-            melodyString->refreshParameters(parameters, 233.08);
+            melodyString1->refreshParameters(parameters, rootFreq * pow(1.05946, 12));
+            melodyString2->refreshParameters(parameters, rootFreq * pow(1.05946, 24));
             return true; // Indicates the key was handled
         }
-        else if (key == juce::KeyPress('a')) 
+        else if (key == juce::KeyPress('w')) 
         {
-            melodyString->refreshParameters(parameters, 246.94);
-            return true; // Indicates the key was handled
-        }
-        else if (key == juce::KeyPress('w'))
-        {
-            melodyString->refreshParameters(parameters, 261.63);
+            melodyString1->refreshParameters(parameters, rootFreq * pow(1.05946, 13));
+            melodyString2->refreshParameters(parameters, rootFreq * pow(1.05946, 25));
             return true; // Indicates the key was handled
         }
         else if (key == juce::KeyPress('s'))
         {
-            melodyString->refreshParameters(parameters, 277.18);
+            melodyString1->refreshParameters(parameters, rootFreq * pow(1.05946, 14));
+            melodyString2->refreshParameters(parameters, rootFreq * pow(1.05946, 26));
             return true; // Indicates the key was handled
         }
         else if (key == juce::KeyPress('e'))
         {
-            melodyString->refreshParameters(parameters, 293.66);
+            melodyString1->refreshParameters(parameters, rootFreq * pow(1.05946, 15));
+            melodyString2->refreshParameters(parameters, rootFreq * pow(1.05946, 27));
             return true; // Indicates the key was handled
         }
         else if (key == juce::KeyPress('d'))
         {
-            melodyString->refreshParameters(parameters, 311.13);
+            melodyString1->refreshParameters(parameters, rootFreq * pow(1.05946, 16));
+            melodyString2->refreshParameters(parameters, rootFreq * pow(1.05946, 28));
+            return true; // Indicates the key was handled
+        }
+        else if (key == juce::KeyPress('r'))
+        {
+            melodyString1->refreshParameters(parameters, rootFreq * pow(1.05946, 17));
+            melodyString2->refreshParameters(parameters, rootFreq * pow(1.05946, 29));
             return true; // Indicates the key was handled
         }
         else if (key == juce::KeyPress('f'))
         {
-            melodyString->refreshParameters(parameters, 329.63);
+            melodyString1->refreshParameters(parameters, rootFreq * pow(1.05946, 18));
+            melodyString2->refreshParameters(parameters, rootFreq * pow(1.05946, 30));
             return true; // Indicates the key was handled
         }
         else if (key == juce::KeyPress('t'))
         {
-            melodyString->refreshParameters(parameters, 349.23);
+            melodyString1->refreshParameters(parameters, rootFreq * pow(1.05946, 19));
+            melodyString2->refreshParameters(parameters, rootFreq * pow(1.05946, 31));
             return true; // Indicates the key was handled
         }
         else if (key == juce::KeyPress('g'))
         {
-            melodyString->refreshParameters(parameters, 369.99);
+            melodyString1->refreshParameters(parameters, rootFreq * pow(1.05946, 20));
+            melodyString2->refreshParameters(parameters, rootFreq * pow(1.05946, 32));
             return true; // Indicates the key was handled
         }
         else if (key == juce::KeyPress('y'))
         {
-            melodyString->refreshParameters(parameters, 392);
+            melodyString1->refreshParameters(parameters, rootFreq * pow(1.05946, 21));
+            melodyString2->refreshParameters(parameters, rootFreq * pow(1.05946, 33));
             return true; // Indicates the key was handled
         }
         else if (key == juce::KeyPress('h'))
         {
-            melodyString->refreshParameters(parameters, 415.30);
+            melodyString1->refreshParameters(parameters, rootFreq * pow(1.05946, 22));
+            melodyString2->refreshParameters(parameters, rootFreq * pow(1.05946, 34));
+            return true; // Indicates the key was handled
+        }
+        else if (key == juce::KeyPress('u'))
+        {
+            melodyString1->refreshParameters(parameters, rootFreq * pow(1.05946, 23));
+            melodyString2->refreshParameters(parameters, rootFreq * pow(1.05946, 35));
+            return true; // Indicates the key was handled
+        }
+        else if (key == juce::KeyPress('j'))
+        {
+            melodyString1->refreshParameters(parameters, rootFreq * pow(1.05946, 24));
+            melodyString2->refreshParameters(parameters, rootFreq * pow(1.05946, 36));
             return true; // Indicates the key was handled
         }
 
@@ -106,13 +129,16 @@ private:
     //std::unique_ptr<BowedString> bowedString;
     std::unique_ptr<BowedString> droneString1;
     std::unique_ptr<BowedString> droneString2;
-    std::unique_ptr<BowedString> melodyString;
+    std::unique_ptr<BowedString> melodyString1;
+    std::unique_ptr<BowedString> melodyString2;
 
     //// Set the paramters ///
     juce::NamedValueSet parameters;
 
     juce::Slider melodySlider;
     juce::Label melodyLabel;
+
+    double rootFreq = 98.00;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };
