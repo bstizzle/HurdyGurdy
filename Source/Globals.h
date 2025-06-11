@@ -10,7 +10,6 @@
 
 #pragma once
 #include <JuceHeader.h>
-#include "Wheel.h"
 
 namespace Globals
 {

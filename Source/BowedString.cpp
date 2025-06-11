@@ -117,7 +117,7 @@ void BowedString::calculatePluck()
 
 void BowedString::calculateBow()
 {
-    for (int l = 2; l < N - 1; ++l)
+    for (int l = 2; l < N - 2; ++l)
     {
         // full expanded equation
         //u[0][l] = (2.0 * u[1][l] - u[2][l] + lambdaSq * (u[1][l + 1] - 2.0 * u[1][l] + u[1][l - 1])
@@ -213,7 +213,7 @@ juce::Path BowedString::visualiseState(juce::Graphics& g, double visualScaling)
     for (int l = 1; l <= N; l++) // if you don't save the boundaries use l < N
     {
         // Needs to be -u, because a positive u would visually go down
-        float newY = -u[1][l] * 100 * visualScaling + stringBoundaries;
+        float newY = -u[1][l] * 150 * visualScaling + stringBoundaries;
 
         // if we get NAN values, make sure that we don't get an exception
         if (isnan(newY))
@@ -373,10 +373,10 @@ void BowedString::refreshParameters(juce::NamedValueSet parameters, double freq)
 
 void BowedString::tune(double freq)
 {
-    L = sqrt(cSq) / (freq * 2);
-    h = L / N; // recalculate h
+    tuneL = sqrt(cSq) / (freq * 2);
+    tuneH = tuneL / N; // recalculate h
     //recalculate lambda
-    double tunedLambda = cSq * k * k / (h * h);
+    double tunedLambda = cSq * k * k / (tuneH * tuneH);
 
     B0 = 2.0 - 2.0 * tunedLambda - 6.0 * muSq - 2.0 * S1; // u_l^n
     Bss = 2.0 - 2.0 * tunedLambda - 5.0 * muSq - 2.0 * S1;

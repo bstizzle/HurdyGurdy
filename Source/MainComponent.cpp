@@ -55,30 +55,26 @@ void MainComponent::prepareToPlay (int samplesPerBlockExpected, double sampleRat
     parameters.set("vB", 0.2);
     parameters.set("a", 100.0);
 
-    //// Initialise an string instances ////
+    //// Initialise all string instances ////
 
     droneString1 = std::make_unique<BowedString>(parameters, 1 / sampleRate, rootFreq); // root drone note
     droneString2 = std::make_unique<BowedString>(parameters, 1 / sampleRate, rootFreq / pow(1.05946, 7)); // harmony drone note - 4th below root
-    melodyString1 = std::make_unique<BowedString>(parameters, 1 / sampleRate, rootFreq * pow(1.05946, 24)); // upper limit of low melody note - 2 octaves above root
-    melodyString1->refreshParameters(parameters, rootFreq * pow(1.05946, 12)); // actual starting low melody note - 1 octave above root
-    melodyString2 = std::make_unique<BowedString>(parameters, 1 / sampleRate, rootFreq * pow(1.05946, 36)); // upper limit of high note - 3 octaves above root
-    melodyString2->refreshParameters(parameters, rootFreq * pow(1.05946, 24)); // actual starting high melody note - 2 octaves above root
+
+    //melodyString1 = std::make_unique<BowedString>(parameters, 1 / sampleRate, rootFreq * pow(1.05946, 24)); // upper limit of low melody note - 2 octaves above root
+    //melodyString1->refreshParameters(parameters, rootFreq * pow(1.05946, 12)); // actual starting low melody note - 1 octave above root
+    melodyString1 = std::make_unique<BowedString>(parameters, 1 / sampleRate, lowMelodyFreq * pow(1.05946, 12)); // upper limit of low melody note - 2 octaves above root
+    melodyString1->refreshParameters(parameters, lowMelodyFreq); // actual starting low melody note - 1 octave above root
+
+    //melodyString2 = std::make_unique<BowedString>(parameters, 1 / sampleRate, rootFreq * pow(1.05946, 36)); // upper limit of high note - 3 octaves above root
+    //melodyString2->refreshParameters(parameters, rootFreq * pow(1.05946, 24)); // actual starting high melody note - 2 octaves above root
+    melodyString2 = std::make_unique<BowedString>(parameters, 1 / sampleRate, highMelodyFreq * pow(1.05946, 12)); // upper limit of high note - 3 octaves above root
+    melodyString2->refreshParameters(parameters, highMelodyFreq); // actual starting high melody note - 2 octaves above root
 
 
     addAndMakeVisible(droneString1.get());
     addAndMakeVisible(droneString2.get());
     addAndMakeVisible(melodyString1.get());
     addAndMakeVisible(melodyString2.get());
-
-
-    addAndMakeVisible(melodySlider);
-    melodySlider.setRange(50.0, 1000.0); // [1]
-    melodySlider.addListener(this); // [3]
-
-    addAndMakeVisible(melodyLabel);
-    melodyLabel.setText("melody", juce::dontSendNotification);
-    melodyLabel.attachToComponent(&melodySlider, true); // [4]
-
 
     // Call resized again as our components need a sample rate before they can get initialised.
     resized();
@@ -138,7 +134,7 @@ void MainComponent::getNextAudioBlock (const juce::AudioSourceChannelInfo& buffe
         melodyString2->updateStates();
 
         // move  outpout location closer to edge for more irregularities
-        double outputLoc = 0.11;
+        double outputLoc = 0.31;
         output = (droneString1->getOutput(outputLoc) + droneString2->getOutput(outputLoc)
             + melodyString1->getOutput(outputLoc) + melodyString2->getOutput(outputLoc));
 
@@ -168,8 +164,6 @@ void MainComponent::resized()
     // update their positions.
     //if (myStiffString != nullptr)
       //  myStiffString->setBounds(getLocalBounds());
-    auto sliderLeft = 120;
-    melodySlider.setBounds(sliderLeft, 20, getWidth() - sliderLeft - 10, 20);
 
     auto bounds = getLocalBounds();
     int numStrings = 4;

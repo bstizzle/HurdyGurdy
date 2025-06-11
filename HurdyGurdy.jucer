@@ -7,12 +7,8 @@
       <FILE id="UOeBrZ" name="BowedString.h" compile="0" resource="0" file="Source/BowedString.h"/>
       <FILE id="Sb6Wtl" name="BowedString.cpp" compile="1" resource="0" file="Source/BowedString.cpp"/>
       <FILE id="rP3GVG" name="Globals.h" compile="0" resource="0" file="Source/Globals.h"/>
-      <FILE id="OK3rrC" name="Wheel.cpp" compile="1" resource="0" file="Source/Wheel.cpp"/>
-      <FILE id="hfcGia" name="Wheel.h" compile="0" resource="0" file="Source/Wheel.h"/>
       <FILE id="ygCbJr" name="Main.cpp" compile="1" resource="0" file="Source/Main.cpp"/>
       <FILE id="ntSMt3" name="MainComponent.h" compile="0" resource="0" file="Source/MainComponent.h"/>
-      <FILE id="RUGaLB" name="StiffString.h" compile="0" resource="0" file="Source/StiffString.h"/>
-      <FILE id="BQeJ9j" name="StiffString.cpp" compile="1" resource="0" file="Source/StiffString.cpp"/>
       <FILE id="ld8lLv" name="MainComponent.cpp" compile="1" resource="0"
             file="Source/MainComponent.cpp"/>
     </GROUP>

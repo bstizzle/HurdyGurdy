@@ -67,11 +67,14 @@ private:
         bool excitationFlag = false;
 
         // initialise location of excitation
-        double excitationLoc = 0.5;
+        double excitationLoc = 0.27;
 
         bool clamped = true;
 
         double connectionDivisionTerm = -1;
+
+        //tuning vars
+        double tuneL, tuneH;
 
     //BOW VARIABLES
         // bow variables
